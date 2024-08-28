@@ -390,7 +390,7 @@ async def reg_three(message:Message, state:FSMContext):
 async def reg_four(message:Message, state:FSMContext):
     await state.update_data(course=message.text)
     await state.set_state(User.tg_name)
-    await message.answer('Введите ник в ТГ для связи (в формате @name):')
+    await message.answer("Введите ник в ТГ для связи (в формате '@name'):")
 
 
 @router.message(User.tg_name)

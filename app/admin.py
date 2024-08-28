@@ -27,7 +27,7 @@ class AdminProtect(Filter):
 
 @admin.message(AdminProtect(), Command('apanel'))
 async def apanel(message: Message):
-    await message.answer(f'Привет, администратор {message.from_user.first_name}!\n\n Твои возможные команды: \n/delete_loans (удалить существующую бронь)\n/see_loans (посмотреть активные брони)\n/newsletter (отправить сообщение всем пользователям)')
+    await message.answer(f'Привет, администратор {message.from_user.first_name}!\n\nТвои возможные команды:\n/delete_loans (удалить существующую бронь)\n/see_loans (посмотреть активные брони)\n/newsletter (отправить сообщение всем пользователям)')
 
 
 

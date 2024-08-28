@@ -3,12 +3,12 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
 
 from dotenv import load_dotenv
-from config import SQLALCHEMY_URL
+from config import SQLALCHEMY_URL, CONNECTION
 
 
 load_dotenv()
 
-engine = create_async_engine(SQLALCHEMY_URL)
+engine = create_async_engine(CONNECTION)
 
 async_session = async_sessionmaker(engine)
 
