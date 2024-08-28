@@ -27,7 +27,7 @@ class AdminProtect(Filter):
 
 @admin.message(AdminProtect(), Command('apanel'))
 async def apanel(message: Message):
-    await message.answer('Возможные команды: \n/delete_loans\n/see_loans\n/newsletter')
+    await message.answer(f'Привет, администратор {message.from_user.first_name}!\n\n Твои возможные команды: \n/delete_loans (удалить существующую бронь)\n/see_loans (посмотреть активные брони)\n/newsletter (отправить сообщение всем пользователям)')
 
 
 
@@ -187,12 +187,13 @@ async def see_loans(message: Message):
 
         user_name = await rq.get_user_tg_name(loan.user)
         await message.answer(f'День недели: {day}, Время: {hour}, Пользователь: {user_name}')
+    await message.answer(f'Администратор, {message.from_user.first_name}!\nЭто все брони. Если спиоск броней не появился, это означает, что никто из пользователей еще не оформил бронь.')
 
 
 @admin.message(AdminProtect(), Command('delete_loans'))
 async def cancel_loans(message: Message, state:FSMContext):
     await state.set_state(DeleteLoan.loan)
-    await message.answer('Выберите бронь, которую хотите отменить',
+    await message.answer(f'Администратор, {message.from_user.first_name}!\nВыбери бронь, которую хочешь отменить: (Если список с активными бронями не появился, это означает, что никто из пользователей еще не оформил бронь)',
                          reply_markup=await kb.get_loans())
     
 
@@ -201,7 +202,7 @@ async def cancel_loans(message: Message, state:FSMContext):
 async def loan(message: Message, state:FSMContext):
     await state.update_data(loan = message.text)
     await state.set_state(DeleteLoan.confirm)
-    await message.answer('Подтверждаете отмену?', 
+    await message.answer(f'Администратор, {message.from_user.first_name}!\nПодтверждаешь отмену?', 
                          reply_markup=kb.need_ball)
     
 
@@ -216,16 +217,16 @@ async def confirm(message: Message, state:FSMContext):
         hour_str = data['loan'].split(' ')[1]
         hour_int = await rq.get_hour_id(hour_str)
         await rq.cancel_loans(day_int, hour_int)
-        await message.answer(f'Бронь отменена, теперь дата: {day_str} {hour_str} снова свободна для бронирования пользователями.')
+        await message.answer(f'Администратор, {message.from_user.first_name}!\nБронь отменена, теперь дата: {day_str} {hour_str} снова свободна для бронирования пользователями.')
     elif data['confirm'] == 'Нет':
-        await message.answer('Операция отменена')
+        await message.answer(f'Администратор, {message.from_user.first_name}!\nОперация отменена.')
     await state.clear()
 
 
 @admin.message(AdminProtect(), Command('newsletter'))
 async def newsletter(message: Message, state: FSMContext):
     await state.set_state(Newsletter.letter)
-    await message.answer('Введите сообщение для рассылки.')
+    await message.answer(f'Администратор, {message.from_user.first_name}!\nДанная команда позволит тебе отправить сообщение всем пользователям, которые прошли регистрацию в боте (оформили бронь).\nВведи сообщение для рассылки:')
 
 
 @admin.message(AdminProtect(), Newsletter.letter)
@@ -237,6 +238,6 @@ async def newsletter_message(message: Message, state:FSMContext):
             await message.send_copy(chat_id=user.tg_id)
         except Exception as e:
             print(e)
-    await message.answer('Рассылка завершена')
+    await message.answer('Рассылка завершена.')
     await state.clear()
      

@@ -59,7 +59,7 @@ async def play_basket(callback: CallbackQuery):
     for user in users:
         l.append(user.tg_id)
     if tg_id in l:
-        await callback.message.answer('Вы зарегистрированы, это здорово!\n\nВозможные команды:\n/see_loan\n/new_loan\n/cancel_loan\n/change_profile')
+        await callback.message.answer('Вы зарегистрированы, это здорово!\n\nВозможные команды:\n/see_loan (посмотреть свои активные брони)\n/new_loan (оформить новую бронь)\n/cancel_loan (отменить свою, раннее зарегестрированную бронь)\n/change_profile (изменить данные профиля)')
     else:
         await callback.message.answer('Необходимо пройти регистрацию.', reply_markup=kb.reg)
     
@@ -87,10 +87,10 @@ async def change_profile(message: Message, state: FSMContext):
     data = await state.get_data()
     if data['desicion'] == 'Да':
         await state.set_state(ChangeProfile.attribute)
-        await message.answer('Выберите поле, которое хотите изменить', 
+        await message.answer('Выберите поле, которое хотите изменить:', 
                              reply_markup=kb.attribute)
     elif data['desicion'] == 'Нет':
-        await message.answer('Данные сохранены без изменений')
+        await message.answer('Данные сохранены без изменений.')
         await state.clear()
     
 
@@ -300,13 +300,15 @@ async def see_loan(message: Message):
                 day = 'Пятница'
                 hour = '19:00'
 
-        await message.answer(f'День недели: {day}, Время:{hour}')
+        await message.answer(f'День недели: {day}, Время: {hour}')
+    await message.answer('Это все текущие брони. Если брони не появились, то это значит, что у тебя нет активных броней. Введите команду /new_loan для оформления брони.')
+
 
 
 @router.message(Command('new_loan'))
 async def new_loan(message:Message, state:FSMContext):
     await state.set_state(Loan.day)
-    await message.answer('Выберите свободный день недели для брони:',
+    await message.answer('Выберите свободный день недели для брони: (если не появился список со свободными днями, это означает, что все дни, к сожалению, уже заняты)',
                              reply_markup=await kb.get_days())
 
 
@@ -314,8 +316,9 @@ async def new_loan(message:Message, state:FSMContext):
 async def cancel_loan(message: Message, state:FSMContext):
     tg_id = message.from_user.id
     await state.set_state(Cancel.loan)
-    await message.answer("Выберите бронь для отмены:",
+    await message.answer("Выберите бронь для отмены: (если не появился список с бронями, это ознанчает, что у тебя нет активной брони, введите команду /new_loan для ее оформления)",
                                   reply_markup = await kb.get_loan(tg_id))
+
 
 
 @router.message(Cancel.loan)
@@ -411,7 +414,7 @@ async def reg_four(message:Message, state:FSMContext):
         await rq.set_user(message.from_user.id, data['name'], data['program'], data['course'], data['tg_name'])
         await state.clear()
         await state.set_state(Loan.day)
-        await message.answer('Вы прошли регистрацию! Теперь необходимо оформить бронь: Выберите свободный день недели для брони',
+        await message.answer('Вы прошли регистрацию!\nТеперь необходимо оформить бронь\n\nВыберите свободный день недели для брони:',
                              reply_markup=await kb.get_days())
     elif data['confirm'] == 'Отказаться':
         await state.clear()
@@ -428,7 +431,7 @@ async def reg_four(message:Message, state:FSMContext):
 async def reg_six(message:Message, state:FSMContext):
     await state.update_data(day=message.text)
     await state.set_state(Loan.hour)
-    await message.answer('Вы выбрали день.\nВыберите свободное время.',
+    await message.answer('Вы выбрали день.\nВыберите свободное время:',
                         reply_markup=await kb.get_times(message.text))
 
 
@@ -457,7 +460,7 @@ async def reg_eight(message:Message, state:FSMContext):
 #                        hour_id=hour_id,
 #                        need_ball=data['need_ball'])
     await state.set_state(Loan.confirm)
-    await message.answer(f'День недели: {data["day"]}\nВремя: {data["hour"]}\nНужен инвентарь? {message.text}\n\nПодтверждая бронь времени, вы несете ответственность за происходящее на площадке и инвентарь, который вам предоставил Отдел по работе со студентами', 
+    await message.answer(f'День недели: {data["day"]}\nВремя: {data["hour"]}\nНужен инвентарь? {message.text}\n\nПодтверждая бронь времени, вы несете ответственность за происходящее на площадке и инвентарь, который вам предоставил Отдел по работе со студентами.', 
                     reply_markup=kb.confirm)
                   
     #await state.clear()
@@ -474,7 +477,7 @@ async def reg_nine(message:Message, state:FSMContext):
                         day_id=day_id,
                         hour_id=hour_id,
                         need_ball=data['need_ball'])
-        await message.answer(f'Отлично, твоя бронь зарегистрирована!По подробностям можешь написать Менеджеру Отдела по работе со студентами ВШБ Покидову Егору Сергеевичу @egorchpok')
+        await message.answer(f'Отлично, твоя бронь зарегистрирована! По подробностям можешь написать Менеджеру Отдела по работе со студентами ВШБ Покидову Егору Сергеевичу @egorchpok')
     if data['confirm'] == 'Отказаться':
         await message.answer('Бронь сброшена.\n\nВведите команду /start для оформления новой брони')
     await state.clear()
